@@ -1,0 +1,10 @@
+﻿{
+	"Name": "SortingChests",
+	"Author": "aRooooooba",
+	"Version": "0.0.1",
+	"Description": "sort the chests",
+	"UniqueID": "aRooooooba.SortingChests",
+	"EntryDll": "SortingChests.dll",
+	"MinimumApiVersion": "3.0.0",
+	"UpdateKeys": []
+}
