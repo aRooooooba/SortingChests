@@ -14,8 +14,8 @@ namespace SortingChests
     /// </summary>
     public class ItemChest
     {
-        public Item item;
-        public Chest chest;
+        public Item item { get; }
+        public Chest chest { get; }
 
         public ItemChest(Item item, Chest chest)
         {

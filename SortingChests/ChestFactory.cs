@@ -6,9 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Buildings;
 using StardewValley.Locations;
-using StardewValley.Menus;
 using StardewValley.Objects;
 
 namespace SortingChests
@@ -58,7 +56,7 @@ namespace SortingChests
             return Search();
         }
 
-        public void sortChests(GameLocation location)
+        public void SortChests(GameLocation location)
         {
             if (!contentDict.ContainsKey(location))
                 contentDict.Add(location, new Dictionary<string, ItemChest>());
@@ -77,6 +75,7 @@ namespace SortingChests
                         monitor.Log($"new item: {item.Name} {item.Stack}", LogLevel.Debug);
                         curContent[item.Name].item.addToStack(item);
                         item.Stack = 0;
+                        chest.grabItemFromChest(item, Game1.MasterPlayer);
                         monitor.Log($"original item: {item.Name} {curContent[item.Name].item.Stack}", LogLevel.Debug);
                         monitor.Log($"new item: {item.Name} {item.Stack}", LogLevel.Debug);
                     }

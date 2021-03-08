@@ -21,19 +21,20 @@ namespace SortingChests
         public override void Entry(IModHelper helper)
         {
             chestFactory = new ChestFactory(helper.Multiplayer, Monitor);
-            helper.Events.Player.InventoryChanged += this.OnInventoryChanged;
+            helper.Events.Player.InventoryChanged += OnInventoryChanged;
         }
 
 
         /*********
         ** Private methods
+        * Not using ChestInventoryChanged because it will be triggered during sorting.
         *********/
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
         {
             Monitor.Log("called", LogLevel.Debug);
-            chestFactory.sortChests(e.Player.currentLocation);
+            chestFactory.SortChests(e.Player.currentLocation);
         }
     }
 }
