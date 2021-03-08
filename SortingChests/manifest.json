@@ -1,10 +1,10 @@
 ﻿{
 	"Name": "SortingChests",
 	"Author": "aRooooooba",
-	"Version": "0.0.1",
+	"Version": "0.1.0",
 	"Description": "sort the chests",
 	"UniqueID": "aRooooooba.SortingChests",
 	"EntryDll": "SortingChests.dll",
 	"MinimumApiVersion": "3.0.0",
-	"UpdateKeys": []
+	"UpdateKeys": ["Nexus:8224", "GitHub:aRooooooba/SortingChests"]
 }

@@ -71,13 +71,9 @@ namespace SortingChests
                         continue;
                     else
                     {
-                        monitor.Log($"original item: {item.Name} {curContent[item.Name].item.Stack}", LogLevel.Debug);
-                        monitor.Log($"new item: {item.Name} {item.Stack}", LogLevel.Debug);
                         curContent[item.Name].item.addToStack(item);
                         item.Stack = 0;
                         chest.grabItemFromChest(item, Game1.MasterPlayer);
-                        monitor.Log($"original item: {item.Name} {curContent[item.Name].item.Stack}", LogLevel.Debug);
-                        monitor.Log($"new item: {item.Name} {item.Stack}", LogLevel.Debug);
                     }
                 }
             }
