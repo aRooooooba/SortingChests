@@ -14,13 +14,13 @@ namespace SortingChests
     /// </summary>
     public class ItemChest
     {
-        public Item item { get; }
-        public Chest chest { get; }
+        public Item Item { get; }
+        public Chest Chest { get; }
 
         public ItemChest(Item item, Chest chest)
         {
-            this.item = item;
-            this.chest = chest;
+            this.Item = item;
+            this.Chest = chest;
         }
     }
 }

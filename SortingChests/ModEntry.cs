@@ -13,6 +13,7 @@ namespace SortingChests
     public class ModEntry : Mod
     {
         private ChestFactory chestFactory;
+        private int skipTriggers;
         /*********
         ** Public methods
         *********/
@@ -20,8 +21,9 @@ namespace SortingChests
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            skipTriggers = 0;
             chestFactory = new ChestFactory(helper.Multiplayer, Monitor);
-            helper.Events.Player.InventoryChanged += OnInventoryChanged;
+            helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
         }
 
 
@@ -31,10 +33,16 @@ namespace SortingChests
         *********/
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
-        private void OnInventoryChanged(object sender, InventoryChangedEventArgs e)
+        private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
         {
+            Monitor.Log($"skip {skipTriggers}", LogLevel.Debug);
+            if (skipTriggers > 0)
+            {
+                skipTriggers--;
+                return;
+            }
             Monitor.Log("called", LogLevel.Debug);
-            chestFactory.SortChests(e.Player.currentLocation);
+            skipTriggers += chestFactory.SortChests(e.Location);
         }
     }
 }

@@ -56,27 +56,56 @@ namespace SortingChests
             return Search();
         }
 
-        public void SortChests(GameLocation location)
+        /// <summary>
+        /// Sort the chests in the given location.
+        /// </summary>
+        /// <param name="location">The location where the chests to be sorted resides.</param>
+        /// <returns>The number of chests operation.</returns>
+        public int SortChests(GameLocation location)
         {
+            int chestOperations = 0;
             if (!contentDict.ContainsKey(location))
                 contentDict.Add(location, new Dictionary<string, ItemChest>());
             IDictionary<string, ItemChest> curContent = contentDict[location];
-            foreach (Chest chest in GetChests(location))
+            foreach (Chest sourceChest in GetChests(location))
             {
-                foreach (Item item in chest.items)
+                foreach (Item newItem in sourceChest.items)
                 {
-                    if (!curContent.ContainsKey(item.Name))
-                        curContent.Add(item.Name, new ItemChest(item, chest));
-                    else if (curContent[item.Name].chest == chest)
+                    if (newItem.Stack == newItem.maximumStackSize())
                         continue;
+                    if (!curContent.ContainsKey(newItem.Name))
+                    {
+                        curContent.Add(newItem.Name, new ItemChest(newItem, sourceChest));
+                        continue;
+                    }
+                    Item oldItem = curContent[newItem.Name].Item;
+                    Chest targetChest = curContent[newItem.Name].Chest;
+                    if (targetChest == sourceChest)
+                        continue;
+                    monitor.Log($"target chest: {targetChest.items[0].DisplayName}", LogLevel.Debug);
+                    monitor.Log($"old item: {oldItem.Stack}", LogLevel.Debug);
+                    monitor.Log($"new item: {newItem.Stack}", LogLevel.Debug);
+                    monitor.Log($"max: {oldItem.maximumStackSize()}", LogLevel.Debug);
+                    if (oldItem.Stack + newItem.Stack > oldItem.maximumStackSize())
+                    {
+                        newItem.Stack -= oldItem.maximumStackSize() - oldItem.Stack;
+                        oldItem.Stack = oldItem.maximumStackSize();
+                        chestOperations += 2;
+                        curContent[newItem.Name] = new ItemChest(newItem, sourceChest);
+                    }
                     else
                     {
-                        curContent[item.Name].item.addToStack(item);
-                        item.Stack = 0;
-                        chest.grabItemFromChest(item, Game1.MasterPlayer);
+                        oldItem.Stack += newItem.Stack;
+                        newItem.Stack = 0;
+                        sourceChest.grabItemFromChest(newItem, Game1.MasterPlayer);
+                        chestOperations += 2;
                     }
+                    monitor.Log($"target chest: {targetChest.items[0].DisplayName}", LogLevel.Debug);
+                    monitor.Log($"old item: {oldItem.Stack}", LogLevel.Debug);
+                    monitor.Log($"new item: {newItem.Stack}", LogLevel.Debug);
                 }
             }
+            return chestOperations;
         }
     }
 }
