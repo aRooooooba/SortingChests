@@ -23,14 +23,19 @@ namespace SortingChests
         {
             skipTriggers = 0;
             chestFactory = new ChestFactory(helper.Multiplayer, Monitor);
+            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
             helper.Events.World.ChestInventoryChanged += OnChestInventoryChanged;
         }
 
 
         /*********
         ** Private methods
-        * Not using ChestInventoryChanged because it will be triggered during sorting.
         *********/
+        private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
+        {
+            skipTriggers += chestFactory.SortChestsInAllLocations();
+        }
+
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
@@ -41,8 +46,7 @@ namespace SortingChests
                 skipTriggers--;
                 return;
             }
-            Monitor.Log("called", LogLevel.Debug);
-            skipTriggers += chestFactory.SortChests(e.Location);
+            Monitor.Log("real called", LogLevel.Debug);
         }
     }
 }

@@ -67,8 +67,10 @@ namespace SortingChests
             if (!contentDict.ContainsKey(location))
                 contentDict.Add(location, new Dictionary<string, ItemChest>());
             IDictionary<string, ItemChest> curContent = contentDict[location];
+            IList<Item> toBeDeleted = new List<Item>();
             foreach (Chest sourceChest in GetChests(location))
             {
+                monitor.Log($"CHEST", LogLevel.Debug);
                 foreach (Item newItem in sourceChest.items)
                 {
                     if (newItem.Stack == newItem.maximumStackSize())
@@ -82,29 +84,38 @@ namespace SortingChests
                     Chest targetChest = curContent[newItem.Name].Chest;
                     if (targetChest == sourceChest)
                         continue;
-                    monitor.Log($"target chest: {targetChest.items[0].DisplayName}", LogLevel.Debug);
-                    monitor.Log($"old item: {oldItem.Stack}", LogLevel.Debug);
-                    monitor.Log($"new item: {newItem.Stack}", LogLevel.Debug);
-                    monitor.Log($"max: {oldItem.maximumStackSize()}", LogLevel.Debug);
+                    chestOperations += 2;
                     if (oldItem.Stack + newItem.Stack > oldItem.maximumStackSize())
                     {
                         newItem.Stack -= oldItem.maximumStackSize() - oldItem.Stack;
                         oldItem.Stack = oldItem.maximumStackSize();
-                        chestOperations += 2;
                         curContent[newItem.Name] = new ItemChest(newItem, sourceChest);
                     }
                     else
                     {
+                        monitor.Log($"act", LogLevel.Debug);
                         oldItem.Stack += newItem.Stack;
-                        newItem.Stack = 0;
-                        sourceChest.grabItemFromChest(newItem, Game1.MasterPlayer);
-                        chestOperations += 2;
+                        toBeDeleted.Add(newItem);
+                        monitor.Log($"act2", LogLevel.Debug);
+                        if (oldItem.Stack == oldItem.maximumStackSize())
+                            curContent.Remove(newItem.Name);
                     }
-                    monitor.Log($"target chest: {targetChest.items[0].DisplayName}", LogLevel.Debug);
-                    monitor.Log($"old item: {oldItem.Stack}", LogLevel.Debug);
-                    monitor.Log($"new item: {newItem.Stack}", LogLevel.Debug);
                 }
+                foreach (Item item in toBeDeleted)
+                {
+                    item.Stack = 0;
+                    sourceChest.grabItemFromChest(item, Game1.MasterPlayer);
+                }
+                Game1.exitActiveMenu();
             }
+            return chestOperations;
+        }
+
+        public int SortChestsInAllLocations()
+        {
+            int chestOperations = 0;
+            foreach (GameLocation location in GetAccessibleLocations())
+                chestOperations += SortChests(location);
             return chestOperations;
         }
     }
