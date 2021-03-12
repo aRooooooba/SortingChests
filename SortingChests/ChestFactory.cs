@@ -8,6 +8,8 @@ using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Locations;
 using StardewValley.Objects;
+using StardewModdingAPI.Utilities;
+using StardewModdingAPI.Events;
 
 namespace SortingChests
 {
@@ -67,46 +69,9 @@ namespace SortingChests
             if (!contentDict.ContainsKey(location))
                 contentDict.Add(location, new Dictionary<string, ItemChest>());
             IDictionary<string, ItemChest> curContent = contentDict[location];
-            IList<Item> toBeDeleted = new List<Item>();
             foreach (Chest sourceChest in GetChests(location))
             {
-                monitor.Log($"CHEST", LogLevel.Debug);
-                foreach (Item newItem in sourceChest.items)
-                {
-                    if (newItem.Stack == newItem.maximumStackSize())
-                        continue;
-                    if (!curContent.ContainsKey(newItem.Name))
-                    {
-                        curContent.Add(newItem.Name, new ItemChest(newItem, sourceChest));
-                        continue;
-                    }
-                    Item oldItem = curContent[newItem.Name].Item;
-                    Chest targetChest = curContent[newItem.Name].Chest;
-                    if (targetChest == sourceChest)
-                        continue;
-                    chestOperations += 2;
-                    if (oldItem.Stack + newItem.Stack > oldItem.maximumStackSize())
-                    {
-                        newItem.Stack -= oldItem.maximumStackSize() - oldItem.Stack;
-                        oldItem.Stack = oldItem.maximumStackSize();
-                        curContent[newItem.Name] = new ItemChest(newItem, sourceChest);
-                    }
-                    else
-                    {
-                        monitor.Log($"act", LogLevel.Debug);
-                        oldItem.Stack += newItem.Stack;
-                        toBeDeleted.Add(newItem);
-                        monitor.Log($"act2", LogLevel.Debug);
-                        if (oldItem.Stack == oldItem.maximumStackSize())
-                            curContent.Remove(newItem.Name);
-                    }
-                }
-                foreach (Item item in toBeDeleted)
-                {
-                    item.Stack = 0;
-                    sourceChest.grabItemFromChest(item, Game1.MasterPlayer);
-                }
-                Game1.exitActiveMenu();
+                chestOperations += AddItems(curContent, sourceChest, sourceChest.items);
             }
             return chestOperations;
         }
@@ -116,6 +81,93 @@ namespace SortingChests
             int chestOperations = 0;
             foreach (GameLocation location in GetAccessibleLocations())
                 chestOperations += SortChests(location);
+            return chestOperations;
+        }
+
+        public void DeleteNullItems(IList<Item> toBeDeleted, Chest sourceChest)
+        {
+            foreach (Item item in toBeDeleted)
+            {
+                item.Stack = 0;
+                sourceChest.grabItemFromChest(item, Game1.MasterPlayer);
+            }
+        }
+
+        public int AddItems(IDictionary<string, ItemChest> curContent, Chest sourceChest, IEnumerable<Item> toBeAdded)
+        {
+            IList<Item> toBeDeleted = new List<Item>();
+            int chestOperations = 0;
+            foreach (Item newItem in toBeAdded)
+            {
+                if (newItem.Stack == newItem.maximumStackSize())
+                    continue;
+                if (curContent.ContainsKey(newItem.Name) && curContent[newItem.Name].Item.Stack == newItem.maximumStackSize())
+                    curContent.Remove(newItem.Name);
+                if (!curContent.ContainsKey(newItem.Name))
+                {
+                    curContent.Add(newItem.Name, new ItemChest(newItem, sourceChest));
+                    continue;
+                }
+                Item oldItem = curContent[newItem.Name].Item;
+                Chest targetChest = curContent[newItem.Name].Chest;
+                if (targetChest == sourceChest)
+                    continue;
+                chestOperations += 2;
+                if (oldItem.Stack + newItem.Stack > oldItem.maximumStackSize())
+                {
+                    newItem.Stack -= oldItem.maximumStackSize() - oldItem.Stack;
+                    oldItem.Stack = oldItem.maximumStackSize();
+                    curContent[newItem.Name] = new ItemChest(newItem, sourceChest);
+                }
+                else
+                {
+                    oldItem.Stack += newItem.Stack;
+                    toBeDeleted.Add(newItem);
+                    if (oldItem.Stack == oldItem.maximumStackSize())
+                        curContent.Remove(newItem.Name);
+                }
+            }
+            DeleteNullItems(toBeDeleted, sourceChest);
+            return chestOperations;
+        }
+
+        public void RemoveItems(IDictionary<string, ItemChest> curContent, IEnumerable<Item> toBeRemoved)
+        {
+            foreach (Item newItem in toBeRemoved)
+            {
+                if (newItem.Stack == newItem.maximumStackSize() || !curContent.ContainsKey(newItem.Name))
+                    continue;
+                curContent.Remove(newItem.Name);
+            }
+        }
+
+        public int ChangeItemsQuantities(IDictionary<string, ItemChest> curContent, Chest sourceChest, IEnumerable<ItemStackSizeChange> toBeChanged)
+        {
+            IList<Item> toBeAdded = new List<Item>();
+            foreach (ItemStackSizeChange it in toBeChanged)
+            {
+                if (it.NewSize == it.Item.maximumStackSize())
+                    curContent.Remove(it.Item.Name);
+                else
+                    toBeAdded.Add(it.Item);
+            }
+            return AddItems(curContent, sourceChest, toBeAdded);
+        }
+
+        public int UpdateContent(Chest sourceChest, GameLocation location, IEnumerable<Item> added, IEnumerable<Item> removed, IEnumerable<ItemStackSizeChange> quantityChanged)
+        {
+            AddedRemoved addedRemoved = new AddedRemoved(added, removed);
+            int chestOperations = 0;
+            if (!contentDict.ContainsKey(location))
+                contentDict.Add(location, new Dictionary<string, ItemChest>());
+            IDictionary<string, ItemChest> curContent = contentDict[location];
+            string keys = "";
+            foreach (string name in curContent.Keys)
+                keys += name + " ";
+            // monitor.Log(keys, LogLevel.Debug);
+            chestOperations += AddItems(curContent, sourceChest, addedRemoved.Added);
+            RemoveItems(curContent, addedRemoved.Removed);
+            chestOperations += ChangeItemsQuantities(curContent, sourceChest, quantityChanged);
             return chestOperations;
         }
     }

@@ -34,19 +34,20 @@ namespace SortingChests
         private void OnSaveLoaded(object sender, SaveLoadedEventArgs e)
         {
             skipTriggers += chestFactory.SortChestsInAllLocations();
+            Game1.exitActiveMenu();
         }
 
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         private void OnChestInventoryChanged(object sender, ChestInventoryChangedEventArgs e)
         {
-            Monitor.Log($"skip {skipTriggers}", LogLevel.Debug);
             if (skipTriggers > 0)
             {
                 skipTriggers--;
                 return;
             }
-            Monitor.Log("real called", LogLevel.Debug);
+            // Monitor.Log("real called", LogLevel.Debug);
+            skipTriggers += chestFactory.UpdateContent(e.Chest, e.Location, e.Added, e.Removed, e.QuantityChanged);
         }
     }
 }

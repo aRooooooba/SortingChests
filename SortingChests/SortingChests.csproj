@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AddedRemoved.cs" />
     <Compile Include="ChestFactory.cs" />
     <Compile Include="ItemChest.cs" />
     <Compile Include="ModEntry.cs" />
