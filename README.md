@@ -25,3 +25,4 @@ It only sort chests in the same location!
 
 ![only same location](readmeStatic/differentLocations.gif)
 
+This mod is open sourced and is published both on [Nexus](https://www.nexusmods.com/stardewvalley/mods/8224) and [Github](https://github.com/aRooooooba/SortingChests). It would be great if any issue could be posted on Github so that I can be notified at once.
