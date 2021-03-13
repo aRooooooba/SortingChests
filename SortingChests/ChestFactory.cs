@@ -49,7 +49,7 @@ namespace SortingChests
             {
                 foreach (KeyValuePair<Vector2, StardewValley.Object> pair in location.Objects.Pairs)
                 {
-                    if (pair.Value is Chest chest && chest.playerChest.Value)
+                    if (pair.Value is Chest chest && chest.playerChest.Value && chest.SpecialChestType == Chest.SpecialChestTypes.None)
                     {
                         yield return chest;
                     }
@@ -71,7 +71,7 @@ namespace SortingChests
             IDictionary<string, ItemChest> curContent = contentDict[location];
             foreach (Chest sourceChest in GetChests(location))
             {
-                chestOperations += AddItems(curContent, sourceChest, sourceChest.items);
+                chestOperations += AddItems(curContent, sourceChest, sourceChest.GetItemsForPlayer(Game1.player.UniqueMultiplayerID));
             }
             return chestOperations;
         }
@@ -89,7 +89,7 @@ namespace SortingChests
             foreach (Item item in toBeDeleted)
             {
                 item.Stack = 0;
-                sourceChest.grabItemFromChest(item, Game1.MasterPlayer);
+                sourceChest.grabItemFromChest(item, Game1.player);
             }
         }
 
