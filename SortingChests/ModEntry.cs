@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
+using StardewValley.Menus;
 using StardewValley;
 using StardewValley.Objects;
 
@@ -46,8 +47,10 @@ namespace SortingChests
                 skipTriggers--;
                 return;
             }
-            // Monitor.Log("real called", LogLevel.Debug);
+            bool menuOpened = Game1.activeClickableMenu != null;
             skipTriggers += chestFactory.UpdateContent(e.Chest, e.Location, e.Added, e.Removed, e.QuantityChanged);
+            if (!menuOpened)
+                Game1.exitActiveMenu();
         }
     }
 }
